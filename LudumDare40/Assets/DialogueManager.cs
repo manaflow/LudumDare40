@@ -8,14 +8,14 @@ public class DialogueManager : MonoBehaviour {
 
     public bool isFinished { get; set; }
 
-
+    public ImageSequencer imageSequencer;
     public Text nameText;
     public Text dialogueText;
     private string currentText;
     public string fullText;
     public float delay = 0.1f;
     private Queue<string> sentences;
-
+    private Image backgroundImage;
 	// Use this for initialization
 	void Start () {
         isFinished = false;
@@ -24,6 +24,11 @@ public class DialogueManager : MonoBehaviour {
 
     public void StartDialogue(Dialogue dialogue)
     {
+        if(imageSequencer != null)
+        {
+            imageSequencer.LoadImages();
+            backgroundImage = GameObject.Find("Background").GetComponent<Image>();
+        }
         nameText.text = dialogue.name;
 
         sentences.Clear();
@@ -55,6 +60,10 @@ public class DialogueManager : MonoBehaviour {
 
         string sentence = sentences.Dequeue();
         StartCoroutine(ShowText(sentence));
+        if (imageSequencer != null)
+        {
+            backgroundImage.sprite = imageSequencer.DisplayNextImage();
+        }
     }
 
     void EndDialogue()
