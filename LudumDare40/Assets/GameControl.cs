@@ -4,11 +4,12 @@ using UnityEngine;
 
 
 public enum InputType { None, Left, Right, Down, Up};
-public enum GameState { Start, Run, GameOver};
+public enum GameState { Start, Run, Wait, Dead, GameOver};
+public enum Direction { Left, Right, Down, Up };
 public class GameControl : MonoBehaviour
 {
     public GameObject[] startPoints;
-    public GameObject[] endPoints;
+    public GameObject[] desks;
 
     public GameObject childPref;    // Prefab for child
 
@@ -26,6 +27,8 @@ public class GameControl : MonoBehaviour
     float mainTimer = 0; // timer for level
     float legTimer = 0; // timer for leg
 
+    public float waitTime = 2;
+    float waitTimer;
     // Use this for initialization
     void Start()
     {
@@ -42,14 +45,14 @@ public class GameControl : MonoBehaviour
         {
             ChildControl c = GameObject.Instantiate(childPref).GetComponent<ChildControl>();
             c.transform.position = startPoints[i].transform.position;
-            c.start = startPoints[i].transform.position;
-            c.goal = endPoints[i];
+            bool ghost;
+            if (i == 0) ghost = false;
+            else ghost = true;
+
+            c.Init(ghost, startPoints[i].transform.position, desks[i].GetComponent<DeskControl>());
             children.Add(c);
-            c.Init(true);
-
         }
-
-        children[0].Init(false);
+        
     }
 
     // Update is called once per frame
@@ -63,6 +66,23 @@ public class GameControl : MonoBehaviour
         else if (state == GameState.Run)
         {
             HandleRun();
+        }
+        else if(state == GameState.Wait || state == GameState.Dead)
+        {
+            // Update Ghosts
+            for (int i = 0; i < childIndex && i < children.Count; i++)
+            {
+                children[i].Run();
+            }
+
+            if (waitTimer <= 0)
+            {                
+                if(state == GameState.Wait) NextLeg();
+                else if(state == GameState.Dead) ResetLeg();
+
+                state = GameState.Run;
+            }
+            else waitTimer -= Time.deltaTime;
         }
         else if (state == GameState.GameOver)
         {
@@ -106,17 +126,18 @@ public class GameControl : MonoBehaviour
             // Has Reached Goal
             if (children[childIndex].HitGoal())
             {
-                NextLeg();
+                state = GameState.Wait;
+                waitTimer = waitTime;
             }
             // Hit Ghost
             else if (children[childIndex].HitGhost())
             {
-                ResetLeg();
+                state = GameState.Dead;
+                waitTimer = waitTime;
             }
         }        
     }
-
-
+    
     void NextLeg()
     {
         // Update Timers
