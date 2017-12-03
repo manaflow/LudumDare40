@@ -83,6 +83,7 @@
     <Compile Include="Assets\DialogueManager.cs" />
     <Compile Include="Assets\DialogueTrigger.cs" />
     <Compile Include="Assets\GameControl.cs" />
+    <Compile Include="Assets\ImageSequencer.cs" />
     <Compile Include="Assets\Intro.cs" />
     <Compile Include="Assets\MainMenu.cs" />
     <Compile Include="Assets\MyInput.cs" />
