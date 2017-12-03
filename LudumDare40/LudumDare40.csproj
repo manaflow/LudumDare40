@@ -79,6 +79,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\ChildControl.cs" />
+    <Compile Include="Assets\DeskControl.cs" />
     <Compile Include="Assets\GameControl.cs" />
     <Compile Include="Assets\MyInput.cs" />
   </ItemGroup>

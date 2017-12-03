@@ -8,11 +8,9 @@ public class ChildControl : MonoBehaviour {
     public LayerMask ghostMask;
     public LayerMask childMask;
     public LayerMask goalMask;
-
-    [HideInInspector]
-    public Vector3 start;
-    [HideInInspector]
-    public GameObject goal;
+    
+    Vector3 start;
+    DeskControl desk;
     
 
     List<InputType> inputList =  new List<InputType>();
@@ -25,18 +23,22 @@ public class ChildControl : MonoBehaviour {
     Vector2 dir;
     Vector3 myTransform;
 
+    bool dead = false;
+
     public float speed = 0.8f; // how fast child moves
 
     public bool HasMoved { get { if (inputList.Count > 0) return true; return false; } }
-
+    
 
 	// Use this for initialization
-	public void Init (bool IsGhost)
+	public void Init (bool IsGhost, Vector3 Start, DeskControl Desk)
     {
         box = GetComponent<BoxCollider2D>();
         sr = GetComponent<SpriteRenderer>();
         ani = GetComponent<Animator>();
 
+        start = Start;
+        desk = Desk;
         Reset(IsGhost);
         
 	}
@@ -83,7 +85,7 @@ public class ChildControl : MonoBehaviour {
         }
         else
         {
-            // Goal
+            SitAtDesk();
         }
     }
 
@@ -310,7 +312,12 @@ public class ChildControl : MonoBehaviour {
             y = myTransform.y + (0.07f * i);
 
             hit = Physics2D.Raycast(new Vector2(x, y), Vector2.right, 0.14f, goalMask);
-            if (hit.collider != null && hit.collider.gameObject == goal) return true;
+            if (hit.collider != null && hit.collider.gameObject == desk.Goal)
+            {
+                SitAtDesk();
+                desk.DisableGoal();
+                return true;
+            }
         }
         return false;
     }
@@ -327,20 +334,29 @@ public class ChildControl : MonoBehaviour {
             y = myTransform.y + (0.07f * i);
 
             hit = Physics2D.Raycast(new Vector2(x, y), Vector2.right, 0.14f, ghostMask);
-            if (hit.collider != null) return true;
+            if (hit.collider != null)
+            {
+                dead = true;
+                ani.SetBool("dead", true);
+                return true;
+            }
         }
         return false;
     }
 
     public void Reset(bool IsGhost)
     {
+        dead = false;
+        ani.SetBool("desk", false);
+        ani.SetBool("dead", false);
+
         inputIndex = 0;
         if (IsGhost)
         {
             gameObject.layer = LayerMask.NameToLayer("Ghost") ;
             isGhost = true;
             sr.color = new Color(1, 1, 1, 0.5f);
-            goal.GetComponent<SpriteRenderer>().enabled = false;
+            desk.DisableGoal();
         }
         else
         {
@@ -348,10 +364,34 @@ public class ChildControl : MonoBehaviour {
             isGhost = false;
             sr.color = new Color(1, 1, 1, 1);
             inputList.Clear();
-            goal.GetComponent<SpriteRenderer>().enabled = true;
+            desk.EnableGoal();
         }
 
         myTransform = start;
-        transform.position = start;
+        myTransform.z = -2;
+        transform.position = myTransform;
+
+        dir = new Vector2(0, -1);
+        ani.SetBool("moving", false);
+        ani.SetFloat("moveX", dir.x);
+        ani.SetFloat("moveY", dir.y);
+
+    }
+
+    void SitAtDesk()
+    {
+        ani.SetBool("desk", true);
+        myTransform = desk.transform.position;
+        myTransform.z = -2;
+        transform.position = myTransform;
+
+        if (desk.direction == Direction.Left) dir = new Vector2(-1, 0);
+        else if (desk.direction == Direction.Right) dir = new Vector2(1, 0);
+        else if (desk.direction == Direction.Up) dir = new Vector2(0, 1);
+        else if (desk.direction == Direction.Down) dir = new Vector2(0, -1);
+
+        ani.SetBool("moving", false);
+        ani.SetFloat("moveX", dir.x);
+        ani.SetFloat("moveY", dir.y);
     }
 }
