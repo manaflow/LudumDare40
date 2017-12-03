@@ -1,4 +1,10 @@
 sceneSetups:
+- path: Assets/Menu.unity
+  isLoaded: 0
+  isActive: 0
 - path: Assets/Test1.unity
+  isLoaded: 1
+  isActive: 0
+- path: Assets/Intro.unity
   isLoaded: 1
   isActive: 1
