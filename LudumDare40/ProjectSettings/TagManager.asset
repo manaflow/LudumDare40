@@ -13,11 +13,11 @@ TagManager:
   - UI
   - 
   - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Collider
+  - Goal
+  - Start
+  - Ghost
+  - Child
   - 
   - 
   - 
